@@ -66,6 +66,8 @@ CipherForge is a modern, interactive cryptography tool built for students, devel
 ## 📸 Preview
 
 <img src="https://via.placeholder.com/1000x500?text=CipherForge+Preview" />
+<img width="2481" height="1174" alt="image" src="https://github.com/user-attachments/assets/f61100b5-180b-48f4-891c-86c110a4d7f3" />
+<img width="1621" height="1076" alt="image" src="https://github.com/user-attachments/assets/4fa212f8-a38b-4504-b13f-7c40033798b9" />
 
 ---
 
