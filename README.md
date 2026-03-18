@@ -125,4 +125,4 @@ If you like this project:
 
 ---
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=300&color=gradient&section=footer&text=Built%20with%20❤️%20by%20Nusrat&fontSize=25" />
+<img src="https://capsule-render.vercel.app/api?type=waving&height=300&color=gradient&section=footer&text=Built%20by%20Nusrat&fontSize=25" />
