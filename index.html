@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CipherForge — Vigenère Cryptography Studio</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%237c6cfc'/><stop offset='100%25' stop-color='%232dd4bf'/></linearGradient></defs><rect width='100' height='100' rx='20' fill='url(%23g)'/><text y='.9em' font-size='65' x='50%25' text-anchor='middle'>🔐</text></svg>">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <canvas id="pcvs"></canvas>
+  <div id="cglow"></div>
+
+  <!-- ══ HEADER ══ -->
+  <header>
+    <a class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <div class="logo-icon">🔐</div>
+      <div class="logo-text">
+        <h1>CipherForge</h1>
+        <small>CRYPTOGRAPHY STUDIO</small>
+      </div>
+    </a>
+    <div class="hdr-right">
+      <select class="mode-sel" id="cipherMode">
+        <option value="vigenere">Vigenère</option>
+        <option value="caesar">Caesar</option>
+      </select>
+      <button class="theme-btn ripple-btn" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <!-- ══ TOAST ══ -->
+  <div id="toast-ct"></div>
+
+  <!-- ══ MODAL ══ -->
+  <div class="modal-ov" id="modalOv">
+    <div class="modal">
+      <h3 id="mTitle">Title</h3>
+      <p id="mBody">Body</p>
+      <button class="btn btn-primary btn-sm modal-close ripple-btn" onclick="closeModal()">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <main>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-badge">✨ Interactive Cryptography Tool</div>
+      <h2>Encrypt. Decrypt. Visualize.</h2>
+      <p>Real-time analytics · Character mapping · Frequency analysis</p>
+    </div>
+
+    <!-- KEY -->
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-title">🗝️ Cipher Key <span class="badge" id="modeBadge">VIGENÈRE</span></div>
+      <div class="key-row">
+        <div class="key-wrap">
+          <input type="text" id="keyInput" placeholder="Enter key or auto-generate…" autocomplete="off"
+            spellcheck="false">
+          <div class="key-warn" id="keyWarn">⚠ Key must contain only letters (A–Z)</div>
+          <div class="key-info">Auto-generates if empty · <span id="keyLen">0</span> chars</div>
+          <div class="strength" id="strengthRow">
+            <div class="sb" id="sb1"></div>
+            <div class="sb" id="sb2"></div>
+            <div class="sb" id="sb3"></div>
+            <div class="sb" id="sb4"></div>
+            <div class="sb" id="sb5"></div>
+            <span class="slabel" id="sLabel">—</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost ripple-btn" onclick="generateKey()">⚡ Generate</button>
+        <button class="btn btn-ghost ripple-btn" id="caesarWrap" style="display:none">
+          Shift:&nbsp;<input type="number" id="caesarShift" min="1" max="25" value="3"
+            style="width:42px;background:transparent;border:none;color:var(--accent2);font-family:var(--mono);font-size:.85rem;outline:none;">
+        </button>
+      </div>
+    </div>
+
+    <!-- ENCRYPT/DECRYPT PANELS -->
+    <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;">
+      <div class="card" style="flex:1;min-width:280px;">
+        <div class="card-title">📝 Plaintext / Input</div>
+        <textarea id="inputText" placeholder="Type or paste your message here…" spellcheck="false"></textarea>
+        <div class="char-count" id="ccIn">0 characters</div>
+        <div class="action-row">
+          <button class="btn btn-primary ripple-btn" onclick="doEncrypt()">🔒 Encrypt <span
+              class="kbd">Ctrl+↵</span></button>
+          <button class="btn btn-teal ripple-btn" onclick="doDecrypt()">🔓 Decrypt <span
+              class="kbd">Ctrl+⇧+↵</span></button>
+          <label class="btn btn-ghost btn-sm ripple-btn" style="cursor:pointer">
+            📁 File<input type="file" accept=".txt" style="display:none" onchange="loadFile(event)">
+          </label>
+          <button class="btn-icon ripple-btn" onclick="clearAll()" title="Clear">🗑</button>
+        </div>
+        <div class="drop-zone" id="dropZone">🖱️ Drag &amp; drop .txt file here</div>
+      </div>
+
+      <button class="swap-btn ripple-btn" onclick="swapTexts()" title="Swap">⇄</button>
+
+      <div class="card" style="flex:1;min-width:280px;">
+        <div class="card-title">✨ Output Result</div>
+        <textarea id="outputText" class="output-area" readonly placeholder="Result appears here…"
+          spellcheck="false"></textarea>
+        <div class="char-count" id="ccOut">0 characters</div>
+        <div class="action-row">
+          <button class="btn btn-ghost btn-sm ripple-btn" onclick="copyOutput()">📋 Copy</button>
+          <button class="btn btn-ghost btn-sm ripple-btn" onclick="downloadOutput()">💾 Download</button>
+          <button class="btn btn-ghost btn-sm ripple-btn" onclick="useAsInput()">⬆️ Use as Input</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="sec-title">Analytics &amp; Visualization</div>
+    <div class="grid3" style="margin-bottom:18px;">
+      <div class="card">
+        <div class="card-title">📊 Stats</div>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-val" id="sMsg">0</div>
+            <div class="stat-lbl">Msg Len</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="sKey">0</div>
+            <div class="stat-lbl">Key Len</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="sTime">0<span style="font-size:.72rem">ms</span></div>
+            <div class="stat-lbl">Time</div>
+          </div>
+        </div>
+        <div class="stat-extra" id="sExtra">Run encryption to see stats.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔤 Character Mapping</div>
+        <div class="cmap-scroll" id="charMap">
+          <div style="color:var(--text3);font-size:.76rem;text-align:center;padding:22px;">Run encryption to see
+            mappings…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Frequency Analysis</div>
+        <div class="freq-bars" id="freqBars"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="sec-title">Encryption History</div>
+    <div class="card">
+      <div class="card-title">🕘 Recent Sessions <span class="badge">Last 5</span></div>
+      <div class="hist-list" id="histList">
+        <div class="empty-hist">No history yet. Start encrypting! 🔐</div>
+      </div>
+      <div class="action-row" style="margin-top:11px;">
+        <button class="btn btn-ghost btn-sm ripple-btn" onclick="clearHistory()">🗑 Clear History</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══ FOOTER ══ -->
+  <footer>
+    <div class="foot-inner">
+      <div class="foot-top">
+        <div>
+          <div class="foot-brand">🔐 CipherForge</div>
+          <p class="foot-desc">An interactive cryptography learning platform for students, developers &amp; security
+            enthusiasts. Explore classical encryption with modern tooling.</p>
+          <div class="foot-links">
+            <span class="foot-link"
+              onclick="showModal('🔒 Privacy Policy','All encryption happens in your browser. No data is ever sent to any server. Local storage only saves your session preferences.')">🔒
+              Privacy</span>
+            <span class="foot-link"
+              onclick="showModal('📄 Terms','For educational and personal use only. Do not use for unlawful purposes. Vigenère is a classical cipher — not suitable for modern security.')">📄
+              Terms</span>
+            <span class="foot-link"
+              onclick="showModal('💡 About','CipherForge is an open educational cryptography tool built with pure HTML, CSS &amp; JavaScript. No frameworks, no dependencies.')">💡
+              About</span>
+            <span class="foot-link"
+              onclick="showModal('✉️ Contact','Have suggestions or found a bug? Reach out via GitHub or email the developer. We always love hearing from the community! 💌')">✉️
+              Contact</span>
+          </div>
+        </div>
+        <div>
+          <div class="dev-card">
+            <div class="dev-avatar">
+              <img src="Nafisa Tabassum Nusrat.jpg" alt="Nusrat">
+            </div>
+            <div class="dev-info">
+              <div class="dev-tag">Developer & Design By </div>
+              <div class="dev-name">Nafisa Tabassum Nusrat</div>
+              <div class="dev-role">Front-End Developer & Designer</div>
+              <div class="dev-tag">Crafting modern web experiences ✨</div>
+              <div class="dev-links">
+                <span class="dev-link" onclick="window.open('https://github.com/nafisatabassumnusrat', '_blank')">
+                  ⌥ GitHub
+                </span>
+
+                <span class="dev-link"
+                  onclick="window.open('https://www.linkedin.com/in/nafisa-tabassum-nusrat-57134721a/', '_blank')">
+                  in LinkedIn
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="foot-btm">
+        <div>© 2025 <span>CipherForge</span> — Built by Nafisa Tabassum Nusrat</div>
+        <div><span class="kbd">Ctrl+↵</span> Encrypt &nbsp; <span class="kbd">Ctrl+⇧+↵</span> Decrypt</div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
